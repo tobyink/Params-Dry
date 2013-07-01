@@ -64,9 +64,14 @@ use warnings;
         die(@_);
         confess(@_);
     };
-    my %current_params;
 
-    sub __get_final_type { 
+    #=-------------------
+    #  __get_final_type
+    #=-------------------
+    #* counts final type of type (ex. for super_client base type is client and for client base type is String[20]
+    #* so for super_client final type will be String[20])
+    #* RETURN: final type string
+    sub __get_final_type {
         my $param_type = $Params::Internal::typedefs{"$_[0]"};
         $param_type ? __get_final_type($param_type) : $_[0];
     }
@@ -86,7 +91,7 @@ use warnings;
         my $counted_param_type =  (!defined($p_type) or ($p_type =~ /^\d+$/ and $p_type == DEFAULT_TYPE)) ? $p_name : $p_type;
 
         # --- parameter already defined
-        my $final_param_type = __get_final_type($counted_param_type); 
+        my $final_param_type = __get_final_type($counted_param_type);
 
         # --- nazwa jest taka jak zdefinowanego parametru (STRICT NAMES)
         if ($Params::Internal::typedefs{"$p_name"}) {
@@ -98,9 +103,9 @@ use warnings;
 
         # --- get package, function and parameters
         my ($type_package, $type_function, $parameters) = $final_param_type =~ /^(?:(.+)::)?([^\[]+)(?:\[(.+?)\])?/;
-        
+
         my $final_type_package = ($type_package) ? 'Params::Types::'.$type_package : 'Params::Types';
-        
+
         my @type_parameters = split /\s*,\s*/, $parameters // '';
 
 
@@ -124,38 +129,51 @@ use warnings;
         }
 
         $param_value;
- }
-    
-sub typedef($$) {
-    my ($p_name, $p_definition) = @_;
+    }
 
-    if ( exists $Params::Internal::typedefs{$p_name} ) {
-        _error("Error parameter $p_name already defined as $p_definition") if $Params::Internal::typedefs{ $p_name } ne $p_definition;
-    } 
-    # --- just add new definition
-    $Params::Internal::typedefs{$p_name} = $p_definition;
+    #=---------
+    # typedef
+    #=---------
+    #* make relation between name and definition, which can be used to check param types
+    #* RETURN: name of the type
+    sub typedef($$) {
+        my ($p_name, $p_definition) = @_;
 
-    return $p_name;
-    
-}
+        if ( exists $Params::Internal::typedefs{$p_name} ) {
+            _error("Error parameter $p_name already defined as $p_definition") if $Params::Internal::typedefs{ $p_name } ne $p_definition;
+        }
+        # --- just add new definition
+        $Params::Internal::typedefs{$p_name} = $p_definition;
 
-#=-----
-#  __
-#=-----
-#* gets the parameters to internal use
-# RETURN: first param if params like (object, %params) or undef otherwise
-sub __ {
-    my $self = ((scalar @_ % 2) ? shift : undef);
-    push @Params::Internal::params_stack, { @_ };
-    $Params::Internal::current_params = $Params::Internal::params_stack[-1];
-    
-    return $self;
-}
+        return $p_name;
 
-sub nomore {
-    pop @Params::Internal::params_stack;
-    $Params::Internal::current_params = $Params::Internal::params_stack[-1];
-}
+    }
+
+    #=-----
+    #  __
+    #=-----
+    #* gets the parameters to internal use
+    # RETURN: first param if params like (object, %params) or undef otherwise
+    sub __ {
+        my $self = ((scalar @_ % 2) ? shift : undef);
+        push @Params::Internal::params_stack, { @_ };
+        $Params::Internal::current_params = $Params::Internal::params_stack[-1];
+
+        return $self;
+    }
+
+
+# MARK strict mode
+    #=---------
+    #  nomore
+    #=---------
+    #* mark end of param processing part
+    #* required in case param call during param checking
+    # RETURN: current params
+    sub nomore {
+        pop @Params::Internal::params_stack;
+        $Params::Internal::current_params = $Params::Internal::params_stack[-1];
+    }
 
 
 typedef 'client', 'String[20]';
@@ -165,7 +183,7 @@ sub trip {
     my $self = __@_;
     my $p_c = rq 'c', 'String[20]', 'bloccc';
     nomore;
-    
+
     $p_c;
 
 }

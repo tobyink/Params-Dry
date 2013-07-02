@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #*
 #* Name: Params::Declare
 #* Info: Extension to Params, which make possible declaration of the parameters
@@ -36,37 +36,38 @@ use warnings;
 
 #=------------------------------------------------------------------------ { module magic }
 
+
     FILTER_ONLY
         code_no_comments => sub {
-            while (my ($orig_sub, $sub_name, $sub_vars) = $_ =~  /(sub\s+(\w+)\s*\(\s*(.+?)\s*\))/s) { 
+            while (my ($orig_sub, $sub_name, $sub_vars) = $_ =~  /(sub\s+(\w+)\s*\(\s*(.+?)\s*\)\s*{)/s) { 
             
                 my $variables = 'my $self = __@_; ';
                 $sub_vars =~ s/\n//;
 
                 for my $param (split /\s*;\s*/, $sub_vars) {
-                    warn "$param\n";
-                    $param =~ /^(?<is_rq>[!?]) \s* (?<param_name>\w+) \s* : \s* (?<param_type>\w+ (?:\[.+?\])? )? \s* (?:= \s* (?<default>.+))?$/x ;
-                    my $is_rq = $+{'is_rq'} eq '!';
-                    my ($param_name, $param_type, $default) = ($+{'param_name'}, $+{'param_type'}, $+{'default'});
+                    $param =~ s/---.+?([?!])/$1/;
+                    warn "zzzzzzzzzzzzzz: $param :ooo\n";
+                    $param =~ /^(?<is_rq>[!?]) \s* (?<param_name>\w+) \s* : \s* (?<param_type>\w+ (?:\[.+?\])? )? \s* (?:= \s* (?<default>.+))? (?:[#].*)?$/x ;
+                    
+                    my ($is_rq, $param_name, $param_type, $default) = ('')x4;
+                    
+                    $is_rq = $+{'is_rq'} eq '!';
+                    ($param_name, $param_type, $default) = ($+{'param_name'}, $+{'param_type'}, $+{'default'});
                     $param_type ||= $param_name;
+                    $default =~ s/^\*|\*$/'/g if $default;
+                #warn "i: $is_rq, pn: $param_name, t: $param_type, d: $default\n";
 
-                warn "i: $is_rq, pn: $param_name, t: $param_type, d: $default\n";
+                    $variables .= "my \$p_$param_name = ".(($is_rq)?'rq':'op')." '$param_name'";
+                    $variables .= ", '$param_type'" if $param_type;
+                    $variables .= ", $default" if $default;
+                    $variables .= '; ';
                 }
-=pod
-                my ($rq, $name, $type, $default) = ('')x4;
-                    $vars =~ s/^([!\?])(\w+)// and ($rq, $name) = ($1, $2);
-                    $vars =~ s/^\s*[:]\s*([^=;]+)// and ($type) = ($1);
-                    $vars =~ s/^\s*[=]\s*([^;]+)// and ($default) = ($1);
-                    $type =~ s/\s*$//;
-                    $vars =~ s/^\s*;\s*//;
-                    $variables .= "my \$p_$name = ".(($rq eq '!')?'rq':'op')." '$name', '$type', $default; ";
-                warn $variables;
-                }
-=cut
-            # --- for errors in correct lines 
-            my $new_lines = "\n"x($orig_sub =~ s/\n/\n/gs);
-            s/\Q$orig_sub/$sub_name $new_lines/;
-           } 
+                
+                # --- for errors in correct lines 
+                my $new_lines = "\n"x($orig_sub =~ s/\n/\n/gs);
+                s/\Q$orig_sub/sub $sub_name { $new_lines $variables/;
+           #     warn $_;
+                return $_;
+            } 
         }
-
 

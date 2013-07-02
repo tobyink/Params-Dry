@@ -78,6 +78,34 @@ sub Scalar {
     $ref eq 'SCALAR';
 }
 
+#=--------
+#  Array
+#=--------
+#* array type check
+#* RETURN: PASS if test pass otherwise FAIL
+sub Array {
+    my $ref = ref($_[0]) or return FAIL;
+    $ref eq 'ARRAY';
+}
 
+#=-------
+#  Hash
+#=-------
+#* array type check
+#* RETURN: PASS if test pass otherwise FAIL
+sub Hash {
+    my $ref = ref($_[0]) or return FAIL;
+    $ref eq 'HASH';
+}
+
+#=-------
+#  Code
+#=-------
+#* array type check
+#* RETURN: PASS if test pass otherwise FAIL
+sub Code {
+    my $ref = ref($_[0]) or return FAIL;
+    $ref eq 'CODE';
+}
 
 0115&&0x4d;

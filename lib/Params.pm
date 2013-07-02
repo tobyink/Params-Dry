@@ -48,7 +48,7 @@ use warnings;
     our @EXPORT_OK = qw(__ rq op typedef no_more DEFAULT_TYPE param_rq param_op);
 
     our %EXPORT_TAGS = (
-        short => [ qw(__ rq op typedef nomore DEFAULT_TYPE) ],
+        short => [ qw(__ rq op typedef no_more DEFAULT_TYPE) ],
         long  => [ qw(__ param_rq param_op typedef no_more DEFAULT_TYPE) ]
     );
 
@@ -73,8 +73,9 @@ use warnings;
     #* RETURN: final type string
     sub __get_efective_type {
         my $param_type = $Params::Internal::typedefs{ "$_[0]" };
-        $param_type ? __get_final_type($param_type) : $_[0];
+        $param_type ? __get_efective_type($param_type) : $_[0];
     }
+
 
     #=--------------------
     #  __check_parameter
@@ -119,13 +120,13 @@ use warnings;
 
         # --- required / optional
         if (!defined($param_value)) {
-            ($p_is_required) ? _error("Parameter $p_name is required)") : return;
+            ($p_is_required) ? _error("Parameter '$p_name' is required)") : return;
         } 
 
         # --- check if is valid
         {
             no strict 'refs';
-            &$check_function($param_value, @type_parameters) or _error("Parameter $p_name is not $counted_param_type ($efective_param_type) type");
+            &$check_function($param_value, @type_parameters) or _error("Parameter '$p_name' is not '$counted_param_type' type (efective: $efective_param_type)");
         }
 
         $param_value;
@@ -186,13 +187,13 @@ use warnings;
 
 
 # MARK strict mode
-    #=---------
-    #  nomore
-    #=---------
+    #=----------
+    #  no_more
+    #=----------
     #* mark end of param processing part
     #* required in case param call during param checking
     # RETURN: current params
-    sub nomore {
+    sub no_more {
         pop @Params::Internal::params_stack;
         $Params::Internal::current_params = $Params::Internal::params_stack[-1];
     }

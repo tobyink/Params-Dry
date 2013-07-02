@@ -139,7 +139,7 @@ use warnings;
     sub rq($;$$) {
         my ($p_name,$p_type,$p_default) = @_;
 
-        return __check_parameter($p_name, $p_type, $p_default, 1)
+        return __check_parameter($p_name, $p_type, $p_default, TRUE)
     }
     
     #=-----
@@ -150,7 +150,7 @@ use warnings;
     sub op($;$$) {
         my ($p_name,$p_type,$p_default) = @_;
 
-        return __check_parameter($p_name, $p_type, $p_default, 0)
+        return __check_parameter($p_name, $p_type, $p_default, FALSE)
     }
 
     #=---------

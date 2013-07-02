@@ -22,7 +22,7 @@ use strict;
 use warnings;
 
     use 5.10.1;
-# moze sprawdzanie wersji w kluczowych miejscach TODO ?
+
 # --- version ---
     our $VERSION = 1.0_0;
 
@@ -48,7 +48,7 @@ use warnings;
     our @EXPORT_OK = qw(__ rq op typedef no_more DEFAULT_TYPE param_rq param_op);
 
     our %EXPORT_TAGS = (
-        short => [ qw(__ rq op typedef no_more DEFAULT_TYPE) ],
+        short => [ qw(__ rq op typedef nomore DEFAULT_TYPE) ],
         long  => [ qw(__ param_rq param_op typedef no_more DEFAULT_TYPE) ]
     );
 
@@ -65,15 +65,70 @@ use warnings;
         confess(@_);
     };
 
-    #=-------------------
-    #  __get_final_type
-    #=-------------------
-    #* counts final type of type (ex. for super_client base type is client and for client base type is String[20]
+    #=----------------------
+    #  __get_efective_type
+    #=----------------------
+    #* counts efective type of type (ex. for super_client base type is client and for client base type is String[20]
     #* so for super_client final type will be String[20])
     #* RETURN: final type string
-    sub __get_final_type {
-        my $param_type = $Params::Internal::typedefs{"$_[0]"};
+    sub __get_efective_type {
+        my $param_type = $Params::Internal::typedefs{ "$_[0]" };
         $param_type ? __get_final_type($param_type) : $_[0];
+    }
+
+    #=--------------------
+    #  __check_parameter
+    #=--------------------
+    #* checks validity of the parameter
+    #* RETURN: param value
+    sub __check_parameter {
+        my ($p_name,$p_type,$p_default, $p_is_required) = @_;
+
+        # --- check internal syntax ---
+        _error("Name of the parameter has to be defined") unless $p_name;
+
+        # --- detect type (set explicite or get it from name?)
+        my $counted_param_type =  (!defined($p_type) or ($p_type =~ /^\d+$/ and $p_type == DEFAULT_TYPE)) ? $p_name : $p_type;
+
+        # --- check efective parameter definition
+        my $efective_param_type = __get_efective_type($counted_param_type);
+
+        # --- check efective parameter definition for used name (if exists) and if user is not trying to replace name-type with new one (to keep clean naminigs)
+        if ($Params::Internal::typedefs{"$p_name"}) {
+            my $efective_name_type = __get_efective_type($p_name);
+            _error("This variable $p_name is used before in code as $p_name type ($efective_name_type) and here you are trying to redefine it to $counted_param_type ($efective_param_type)")
+                if $efective_name_type ne $efective_param_type;
+
+        }
+
+        # --- get package, function and parameters
+        my ($type_package, $type_function, $parameters) = $efective_param_type =~ /^(?:(.+)::)?([^\[]+)(?:\[(.+?)\])?/;
+
+        my $final_type_package = ($type_package) ? 'Params::Types::'.$type_package : 'Params::Types';
+
+        my @type_parameters = split /\s*,\s*/, $parameters // '';
+
+
+        # --- set default type unless type ---
+        _error("Type $counted_param_type ($efective_param_type) is not defined") unless $final_type_package->can("$type_function");
+
+        # --- getting final parameter value ---
+        my $param_value = ($Params::Internal::current_params->{"$p_name"}) // $p_default // undef;
+
+        my $check_function = $final_type_package.'::'.$type_function;
+
+        # --- required / optional
+        if (!defined($param_value)) {
+            ($p_is_required) ? _error("Parameter $p_name is required)") : return;
+        } 
+
+        # --- check if is valid
+        {
+            no strict 'refs';
+            &$check_function($param_value, @type_parameters) or _error("Parameter $p_name is not $counted_param_type ($efective_param_type) type");
+        }
+
+        $param_value;
     }
 
     #=-----
@@ -84,51 +139,18 @@ use warnings;
     sub rq($;$$) {
         my ($p_name,$p_type,$p_default) = @_;
 
-        # --- check syntax ---
-        _error("Name of the parameter has to be defined") unless $p_name;
+        return __check_parameter($p_name, $p_type, $p_default, 1)
+    }
+    
+    #=-----
+    #  op
+    #=-----
+    #* check if required parameter exists, if yes check it, if not return undef
+    #* RETURN: param value
+    sub op($;$$) {
+        my ($p_name,$p_type,$p_default) = @_;
 
-        use Data::Dumper;
-        my $counted_param_type =  (!defined($p_type) or ($p_type =~ /^\d+$/ and $p_type == DEFAULT_TYPE)) ? $p_name : $p_type;
-
-        # --- parameter already defined
-        my $final_param_type = __get_final_type($counted_param_type);
-
-        # --- nazwa jest taka jak zdefinowanego parametru (STRICT NAMES)
-        if ($Params::Internal::typedefs{"$p_name"}) {
-            my $final_name_type = __get_final_type($p_name);
-            _error("This variable $p_name is used before in code as $p_name type ($final_name_type) and here you are trying to redefine it to $counted_param_type ($final_param_type)")
-                if $final_name_type ne $final_param_type;
-
-        }
-
-        # --- get package, function and parameters
-        my ($type_package, $type_function, $parameters) = $final_param_type =~ /^(?:(.+)::)?([^\[]+)(?:\[(.+?)\])?/;
-
-        my $final_type_package = ($type_package) ? 'Params::Types::'.$type_package : 'Params::Types';
-
-        my @type_parameters = split /\s*,\s*/, $parameters // '';
-
-
-        # --- set default type unless type ---
-        _error("Type $final_param_type is not defined") unless $final_type_package->can("$type_function");
-
-        # --- getting final parameter value ---
-        my $param_value = ($Params::Internal::current_params->{"$p_name"}) // $p_default // undef;
-
-        my $check_function = $final_type_package.'::'.$type_function;
-
-        # --- if required
-        if (!defined($param_value)) {
-            _error("Parameter $p_name is required)");
-        }
-
-        # --- check if is valid
-        {
-            no strict 'refs';
-            &$check_function($param_value, @type_parameters) or _error("Parameter $p_name is not $counted_param_type ($final_param_type) type");
-        }
-
-        $param_value;
+        return __check_parameter($p_name, $p_type, $p_default, 0)
     }
 
     #=---------
@@ -176,30 +198,6 @@ use warnings;
     }
 
 
-typedef 'client', 'String[20]';
-typedef 'sma', 'client';
-
-sub trip {
-    my $self = __@_;
-    my $p_c = rq 'c', 'String[20]', 'bloccc';
-    nomore;
-
-    $p_c;
-
-}
-sub test {
-    my $self = __@_;
-
-    my $p_o = rq 'sma', 'String[20]', 'blox';
-    my $p_ob = rq 'sma', DEFAULT_TYPE, trip(c => 'azul');
-    my $p_or = rq 'smart', 'String[20]', 'blox';
-#    nomore;
-
-    print $p_o, $p_ob, $p_or;
-}
-
-test(smart => '10');
-#my $rbo = rq 'sma', DEFAULT_TYPE, 'blox'; # warning
 __END__
     #=-----
     #  op

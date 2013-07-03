@@ -30,7 +30,6 @@ typedef 'name', 'String[20]';
 
 #=------------------------------------------------------------------------( functions )
 
-=pod
 sub new (
             ! name:;                            --- name of the user 
             ? second_name : name = 'unknown';   --- second name
@@ -60,13 +59,10 @@ sub print_message (
     ) {
     print "For: $p_name\n\nText:\n$p_text\n\n";
 }
-=cut
-sub gret ( 
-    ;
-    ) {
+
+sub gret (;) {
     return "For: \n\nText:\n";
 }
-
 sub print_messages (
             ! name: = $self->get_name;          --- name of the user 
             ! text: String = 1;                --- message text
@@ -74,7 +70,6 @@ sub print_messages (
     ) {
     print "For: $p_name\n\nText:\n$p_text\n\n";
 }
-=pod
 my $pawel = new(name => 'Pawel', details => 'bzebeze');
 my $lucja = new(name => 'Lucja', second_name => 'Marta');
 use Data::Dumper;
@@ -87,7 +82,6 @@ print "Text is missed, and now uncomment no_more in get_name function to mark th
 
 typedef 'myname', 'name';
 print Params::__get_efective_type('myname');
-=cut
 
 #=------------------------------------------------------------------------( main )
 

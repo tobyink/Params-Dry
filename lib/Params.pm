@@ -65,15 +65,15 @@ use warnings;
         confess(@_);
     };
 
-    #=----------------------
-    #  __get_efective_type
-    #=----------------------
-    #* counts efective type of type (ex. for super_client base type is client and for client base type is String[20]
+    #=-----------------------
+    #  __get_effective_type
+    #=-----------------------
+    #* counts effective type of type (ex. for super_client base type is client and for client base type is String[20]
     #* so for super_client final type will be String[20])
     #* RETURN: final type string
-    sub __get_efective_type {
+    sub __get_effective_type {
         my $param_type = $Params::Internal::typedefs{ "$_[0]" };
-        $param_type ? __get_efective_type($param_type) : $_[0];
+        $param_type ? __get_effective_type($param_type) : $_[0];
     }
 
 
@@ -91,19 +91,19 @@ use warnings;
         # --- detect type (set explicite or get it from name?)
         my $counted_param_type =  (!defined($p_type) or ($p_type =~ /^\d+$/ and $p_type == DEFAULT_TYPE)) ? $p_name : $p_type;
 
-        # --- check efective parameter definition
-        my $efective_param_type = __get_efective_type($counted_param_type);
+        # --- check effective parameter definition
+        my $effective_param_type = __get_effective_type($counted_param_type);
 
-        # --- check efective parameter definition for used name (if exists) and if user is not trying to replace name-type with new one (to keep clean naminigs)
+        # --- check effective parameter definition for used name (if exists) and if user is not trying to replace name-type with new one (to keep clean naminigs)
         if ($Params::Internal::typedefs{"$p_name"}) {
-            my $efective_name_type = __get_efective_type($p_name);
-            _error("This variable $p_name is used before in code as $p_name type ($efective_name_type) and here you are trying to redefine it to $counted_param_type ($efective_param_type)")
-                if $efective_name_type ne $efective_param_type;
+            my $effective_name_type = __get_effective_type($p_name);
+            _error("This variable $p_name is used before in code as $p_name type ($effective_name_type) and here you are trying to redefine it to $counted_param_type ($effective_param_type)")
+                if $effective_name_type ne $effective_param_type;
 
         }
 
         # --- get package, function and parameters
-        my ($type_package, $type_function, $parameters) = $efective_param_type =~ /^(?:(.+)::)?([^\[]+)(?:\[(.+?)\])?/;
+        my ($type_package, $type_function, $parameters) = $effective_param_type =~ /^(?:(.+)::)?([^\[]+)(?:\[(.+?)\])?/;
 
         my $final_type_package = ($type_package) ? 'Params::Types::'.$type_package : 'Params::Types';
 
@@ -111,7 +111,7 @@ use warnings;
 
 
         # --- set default type unless type ---
-        _error("Type $counted_param_type ($efective_param_type) is not defined") unless $final_type_package->can("$type_function");
+        _error("Type $counted_param_type ($effective_param_type) is not defined") unless $final_type_package->can("$type_function");
 
         # --- getting final parameter value ---
         my $param_value = ($Params::Internal::current_params->{"$p_name"}) // $p_default // undef;
@@ -126,7 +126,7 @@ use warnings;
         # --- check if is valid
         {
             no strict 'refs';
-            &$check_function($param_value, @type_parameters) or _error("Parameter '$p_name' is not '$counted_param_type' type (efective: $efective_param_type)");
+            &$check_function($param_value, @type_parameters) or _error("Parameter '$p_name' is not '$counted_param_type' type (effective: $effective_param_type)");
         }
 
         $param_value;

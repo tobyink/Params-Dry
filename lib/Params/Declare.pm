@@ -39,16 +39,24 @@ use warnings;
 
     FILTER_ONLY
         code_no_comments => sub {
-            while (my ($orig_sub, $sub_name, $sub_vars) = $_ =~  /(sub\s+(\w+)\s*\(\s*(?:(.+?)\s*)?\)\s*{)/s) { 
+            while (my ($orig_sub, $sub_name, $sub_declared_vars) = $_ =~  /(sub\s+(\w+)\s*\(\s*(?:(.+?)\s*)?\)\s*{)/s) { 
                  
-                $sub_vars //= '';
-                $sub_vars =~ s/\n//;
-                my $variables = 'my $self = __@_;';
+                # --- clean 
+                $sub_declared_vars //= '';
+                $sub_declared_vars =~ s/\n//;
 
-                for my $param (split /\s*;\s*/, $sub_vars) {
+                # --- prepare variables string
+                my $variables_string = 'my $self = __@_;';
+
+                # --- parse variables
+                for my $param (split /\s*;\s*/, $sub_declared_vars) {
+
+                    #+ remove comments
                     $param =~ s/---.+?([?!]|$)/$1/s;
+
                     next unless $param;
 
+                    #+ parse
                     $param =~ /^(?<is_rq>[!?]) \s* (?<param_name>\w+) \s* : \s* (?<param_type>\w+ (?:\[.+?\])? )? \s* (?:= \s* (?<default>.+))? (?:[#].*)?$/x ;
                     
                     my ($is_rq, $param_name, $param_type, $default) = ('')x4;
@@ -57,20 +65,17 @@ use warnings;
                     ($param_name, $param_type, $default) = ($+{'param_name'}, $+{'param_type'}, $+{'default'});
                     $param_type ||= $param_name;
 
-                #warn "i: $is_rq, pn: $param_name, t: $param_type, d: $default\n";
-
-
-                    $variables .= "my \$p_$param_name = ".(($is_rq)?'rq':'op')." '$param_name'";
-                    $variables .= ", '$param_type'" if $param_type;
-                    $variables .= ", $default" if $default;
-                    $variables .= '; ';
+                    $variables_string .= "my \$p_$param_name = ".(($is_rq)?'rq':'op')." '$param_name'";
+                    $variables_string .= ", '$param_type'" if $param_type;
+                    $variables_string .= ", $default" if $default;
+                    $variables_string .= '; ';
                 }
                 
                 # --- for errors in correct lines 
                 my $new_lines = "\n"x($orig_sub =~ s/\n/\n/gs);
-                s/\Q$orig_sub/sub $sub_name { $new_lines $variables no_more;/;
-#:warn $_;
+                s/\Q$orig_sub/sub $sub_name { $new_lines $variables_string no_more;/;
+
             } 
-            return $_;
+            $_;
         }
 

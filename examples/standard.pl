@@ -69,5 +69,5 @@ $pawel->print_message( text => 'Some message for you has arrived');
 print "Text is missed, and now uncomment no_more in get_name function to mark that all parameters was taken and get data from stack\n";
 
 typedef 'myname', 'name';
-print Params::__get_efective_type('myname');
+print Params::__get_effective_type('myname');
 

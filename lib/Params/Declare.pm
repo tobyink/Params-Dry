@@ -39,14 +39,16 @@ use warnings;
 
     FILTER_ONLY
         code_no_comments => sub {
-            while (my ($orig_sub, $sub_name, $sub_vars) = $_ =~  /(sub\s+(\w+)\s*\(\s*(.+?)\s*\)\s*{)/s) { 
-            
-                my $variables = 'my $self = __@_; ';
+            while (my ($orig_sub, $sub_name, $sub_vars) = $_ =~  /(sub\s+(\w+)\s*\(\s*(?:(.+?)\s*)?\)\s*{)/s) { 
+                 
+                $sub_vars //= '';
                 $sub_vars =~ s/\n//;
+                my $variables = 'my $self = __@_;';
 
                 for my $param (split /\s*;\s*/, $sub_vars) {
-                    $param =~ s/---.+?([?!])/$1/;
-                    warn "zzzzzzzzzzzzzz: $param :ooo\n";
+                    $param =~ s/---.+?([?!]|$)/$1/s;
+                    next unless $param;
+
                     $param =~ /^(?<is_rq>[!?]) \s* (?<param_name>\w+) \s* : \s* (?<param_type>\w+ (?:\[.+?\])? )? \s* (?:= \s* (?<default>.+))? (?:[#].*)?$/x ;
                     
                     my ($is_rq, $param_name, $param_type, $default) = ('')x4;
@@ -54,8 +56,9 @@ use warnings;
                     $is_rq = $+{'is_rq'} eq '!';
                     ($param_name, $param_type, $default) = ($+{'param_name'}, $+{'param_type'}, $+{'default'});
                     $param_type ||= $param_name;
-                    $default =~ s/^\*|\*$/'/g if $default;
+
                 #warn "i: $is_rq, pn: $param_name, t: $param_type, d: $default\n";
+
 
                     $variables .= "my \$p_$param_name = ".(($is_rq)?'rq':'op')." '$param_name'";
                     $variables .= ", '$param_type'" if $param_type;
@@ -65,9 +68,9 @@ use warnings;
                 
                 # --- for errors in correct lines 
                 my $new_lines = "\n"x($orig_sub =~ s/\n/\n/gs);
-                s/\Q$orig_sub/sub $sub_name { $new_lines $variables/;
-           #     warn $_;
-                return $_;
+                s/\Q$orig_sub/sub $sub_name { $new_lines $variables no_more;/;
+#:warn $_;
             } 
+            return $_;
         }
 

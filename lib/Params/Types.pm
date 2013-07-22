@@ -6,6 +6,7 @@
 #*
 package Params::Types;
 
+use Scalar::Util 'blessed';
 
 use constant PASS     =>    1; # pass test
 use constant FAIL     =>    0; # test fail
@@ -36,8 +37,8 @@ sub String {
 #* int type check Int(3) - no more than 999
 #* RETURN: PASS if test pass otherwise FAIL
 sub Int {
-    (ref($_[0]) or $_[0] !~ /[+\-]?\d+/) and return FAIL;
-    $_[1] and length $_[0] > $_[1] and return FAIL;
+    (ref($_[0]) or $_[0] !~ /^[+\-]?(\d+)$/) and return FAIL;
+    $_[1] and $1 and length $1 > $_[1] and return FAIL;
     PASS;
 }
 
@@ -47,7 +48,9 @@ sub Int {
 #* float type check
 #* RETURN: PASS if test pass otherwise FAIL
 sub Float {
-    !ref($_[0]) and $_[0] =~ /[+\-]?\d+(?:\.\d+)?/;
+    (ref($_[0]) or $_[0] !~ /^[+\-]?(\d+(?:\.\d+)?)$/) and return FAIL;
+    $_[1] and $1 and length $1 > $_[1] and return FAIL;
+    PASS;
 }
 
 #=-------
@@ -56,7 +59,8 @@ sub Float {
 #* Bool type check
 #* RETURN: PASS if test pass otherwise FAIL
 sub Bool {
-    !ref($_[0]) and ($_[0] == 0 or $_[0] == 1);
+    return PASS if !ref($_[0]) and ("$_[0]" eq '0' or "$_[0]" eq 1);
+    FAIL;
 }
 
 #=---------
@@ -65,8 +69,24 @@ sub Bool {
 #* Object type check, Object - just object, or Object(APos::core) check if is APos::core type
 #* RETURN: PASS if test pass otherwise FAIL
 sub Object {
-    eval { $_[0]->isa($_[1]) }
+    my $class = blessed($_[0]);
+    return FAIL if !$class; # not an object    
+    return FAIL if $_[1] and ($_[1] ne $class);
+    PASS;
 }
+
+#=------
+#  Ref
+#=------
+#* ref type check
+#* RETURN: PASS if test pass otherwise FAIL
+sub Ref {
+    my $ref = ref($_[0]) or return FAIL;
+    
+    return FAIL if $_[1] and $ref ne $_[1];
+    PASS;
+}
+
 
 #=---------
 #  Scalar
@@ -74,8 +94,7 @@ sub Object {
 #* scalar type check
 #* RETURN: PASS if test pass otherwise FAIL
 sub Scalar {
-    my $ref = ref($_[0]) or return FAIL;
-    $ref eq 'SCALAR';
+    Ref($_[0],'SCALAR');
 }
 
 #=--------
@@ -84,8 +103,7 @@ sub Scalar {
 #* array type check
 #* RETURN: PASS if test pass otherwise FAIL
 sub Array {
-    my $ref = ref($_[0]) or return FAIL;
-    $ref eq 'ARRAY';
+    Ref($_[0],'ARRAY');
 }
 
 #=-------
@@ -94,8 +112,7 @@ sub Array {
 #* array type check
 #* RETURN: PASS if test pass otherwise FAIL
 sub Hash {
-    my $ref = ref($_[0]) or return FAIL;
-    $ref eq 'HASH';
+    Ref($_[0],'HASH');
 }
 
 #=-------
@@ -104,8 +121,7 @@ sub Hash {
 #* array type check
 #* RETURN: PASS if test pass otherwise FAIL
 sub Code {
-    my $ref = ref($_[0]) or return FAIL;
-    $ref eq 'CODE';
+    Ref($_[0],'CODE');
 }
 
 0115&&0x4d;

@@ -3,11 +3,16 @@
 #* Info: Simple Global Params Management System
 #* Author: Pawel Guspiel (neo77) <neo@cpan.org>
 #*
-#* First. If you can use any function as in natural languague - you will use and understand even after few months
+#* First. If you can use any function as in natural languague - you will use and understand it even after few months.
+#*
 #* Second. Your lazy life will be easy, and you will reduce a lot of errors if you will have guarancy that your parameter
-#*   for example ,,client'', in whole project will be defined as string(32).
-#* Third. You are lazy, so to have this guarancy you want to set it in one, and only in one place.
-#* DRY principle in its pure form!
+#*   for example ,,client'', in whole project means the same ( ex. is defined as string(32) ).
+#*
+#* Third. You are lazy, so to have this guarancy, you want to set it, in one and only in one place.
+#*
+#* Yes, DRY principle in its pure form!
+#*
+#* So all what you can find in this module. 
 #*
 #* That's all. Easy to use. Easy to manage. Easy to understand.
 #*
@@ -62,7 +67,7 @@ package Params;
     #  _error
     #=---------
     #* printing error message
-    # RETURN: dies
+    # RETURN: dies (in case of Debug is making confess)
     sub _error {
         ($Params::Debug) ? confess(@_) : die(@_);
     }
@@ -207,6 +212,224 @@ package Params;
     *param_op = *op;
 
 
+
 0115&&0x4d;
 
+# ABSTRACT: Simple Global Params Management System
+
 #+ End of Params
+__END__
+=head1 NAME
+
+Params - Simple Global Params Management System
+
+=head1 VERSION
+
+version 1.00
+
+=head1 SYNOPSIS
+
+=head2 Fast start!
+
+=over 2
+
+=item B<typedef> - defines global types for variables
+
+=item B<__@_> - starts parameter fetching
+
+=item B<rq/param_rq> - get required parameter
+
+=item B<op/param_op> - get optional parameter
+
+=item B<no_more> - marks that all parametrs has been fetched (required only in some cases)
+
+=back 
+
+=head2 Example:
+
+    package ParamsTest;
+
+    use strict;
+    use warnings;
+
+    our $VERSION = 1.0;
+
+    #=------------------------------------------------------------------------( use, constants )
+
+    use Params qw(:short);
+
+    #=------------------------------------------------------------------------( typedef definitions )
+
+    # --- how to define types?  - its Easy :)
+    typedef 'name', 'String[20]';   
+  
+    typedef 'subname', 'name';  # even Easier :)  
+
+    #=------------------------------------------------------------------------( functions )
+
+
+    sub new {
+        
+        # --- using parameters :)
+        
+        my $self = __@_;    # inteligent __ function will return $self on '$self->new' call or undef on 'new' call
+        
+        # --- geting parameters data 
+
+        #+ required parameter name (in 'name' (autodetected) type (see typedefs above) with no default value)
+        my $p_name          = rq 'name'; # this is using default type for required parameter name without default value
+
+        #+ optional parameter second_name (in 'name' type (see typedefs above) with default value 'unknown')
+        my $p_second_name   = op 'second_name', 'name', 'unknown'; # this is using name typee for optional parameter name with default value set to 'unknown'
+
+        #+ optional parameter details (in build-in 'String' type  with default value '')
+        my $p_details       = op 'details', 'String', ''; # unlimited string for optional parameter details
+        
+        return bless { 
+                    name        => $p_name,
+                    second_name => $p_second_name,
+                    details     => $p_details, 
+                }, 'ParamsTest';
+    }
+
+    my $lucja = new(name => 'Lucja', second_name => 'Marta');
+
+B<More you can find in examples>
+
+=head1 DESCRIPTION
+
+=head2 Understand main concepts 
+
+First. If you can use any function as in natural languague - you will use and understand it even after few months.
+
+Second. Your lazy life will be easy, and you will reduce a lot of errors if you will have guarancy that your parameter 
+in whole project means the same ( ex. when you see 'client' you know that it is always String[32] ).
+
+Third. You want to set the type in one and only in one place.
+
+Yes, DRY principle in its pure form!
+
+So all your dreams you can now find in this module. 
+
+B<That's all. Easy to use. Easy to manage. Easy to understand.>
+
+
+=head1 CONSTANTS AND VARIABLES
+
+=over 2
+
+=item B<TRUE> - set to 1
+
+=item B<FALSE> - set to 0
+
+=item B<OK> - set to TRUE (1)
+
+=item B<NO> - set to FALSE (0)
+
+=item B<DEFAULT_TYPE> - to mark that you want to use default type
+
+=item B<$Debug> - if set to TRUE (default: FALSE) will show more debug
+
+=back 
+
+=head1 PUBLIC METHODS
+
+=over 2
+
+=item B<__> - turtle operator
+Start getting the parameters. Used on the begin of the function
+    sub pleple {
+        my $self = __@_;    
+
+RETURN: first param if was called like $obj->pleple(%params) or undef on pleple(%params) call 
+
+
+=item B<rq> or B<param_rq> - required parameter
+Check if required parameter exists, if yes check if its valid, if not, report error
+    
+B<rq> C<in param name> [C<in param type>, [C<default value>]]
+    sub pleple {
+        my $self = __@_;
+
+        my $p_param1 = rq 'param1'; # assuming that param1 is defined before by typedef
+        my $p_param2 = rq 'param2', 'String';
+        my $p_param3 = rq 'param3', 'String', 'Default value';
+        my $p_param4 = rq 'param4', DEFAULT_TYPE, 'Default value'; # assuming that param4 is defined before but wanted to give default value
+
+    ...
+
+    pleple(param1 => 'test', param2 => 'bleble');
+
+RETURN: parameter value
+
+=item B<op> or B<param_op> - optional parameter
+Check if required parameter exists, if yes check it, if not return undef
+    
+B<op> C<in param name> [C<in param type>, [C<default value>]]
+
+C<see above>
+
+    my $p_param1 = op 'param1'; # .. see above
+
+RETURN: parameter value
+
+=item B<no_more> - marks that no more parameters will be readed
+It can be useful in some cases, for example whan default value of the param is the 
+function call and this function is using parameters as well. 
+
+The function is getting from internal stack previous parameters
+
+Example.
+    sub get_val {
+        my $self = __@_;
+        
+        my $p_name = rq 'name';
+
+        no_more; # to give back old parameters
+
+    }
+
+    sub main {
+        my $self = __@_;
+        
+        my $p_nick = rq 'nick', 'String', $self->get_val(name => 'somename');
+
+    }
+
+It is good practice to use no_more at the end of geting parameters
+Also the strict parameter checking implementation is planed in next releases
+(so using no_more you will be able to die if apear more parameters that was fetched - to avoid misspelings)
+
+=back
+
+=head1 MODULE PARAMETERS
+
+=over 2
+
+=item B<:short> imports: 'op', 'rq' and common ones
+
+=item B<:long> imports: 'param_op', 'param_rq' and common ones
+
+=back
+
+Common ones mean: '__', 'typedef', 'no_more', DEFAULT_TYPE
+
+=head1 ADDITIONAL INFORMATION
+
+B<1. I didn't wrote here any special extensions (callbacks, ordered parameter list, evals etc). Params module has to be fast.>
+
+If there will be any extension in future. It will be in separate module.
+
+B<2. Ordered parameters list or named parameter list? Named parameter list. For sure.>
+
+Majority of the time you are spending on READING code, not writing it. So for sure named parameter list is better.
+
+=head1 AUTHOR
+
+Pawel Guspiel (neo77) <neo@cpan.org>
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or modify it under the same terms as Perl itself.
+
+

@@ -5,6 +5,7 @@
 #* Author: Pawel Guspiel (neo77) <neo@cpan.org>
 #*
 #* This module keeps validation functions. You can of course add your modules which inherites from this and will add additional checks
+#* Build in types for Params
 #*
 package Params::Types;
 

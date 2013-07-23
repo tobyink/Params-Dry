@@ -26,7 +26,7 @@ package Params;
     use 5.10.0;
 
     # --- version ---
-    our $VERSION = 1.0_0;
+    our $VERSION = 1.00;
 
     #=------------------------------------------------------------------------ { use, constants }
 

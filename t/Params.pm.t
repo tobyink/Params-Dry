@@ -107,6 +107,21 @@ $tb->output( \*STDOUT );
     lives_ok( sub { Params::__check_parameter( 'test', 'client',     '', 0 ) }, 'try to redefine existing type (fail)' );
     lives_ok( sub { Params::__check_parameter( 'test', 'String[20]', '', 0 ) }, 'redefine existing type with the same values' );
 
+    # --- define own type
+    {
+        no warnings 'once';
+        *Params::Types::Super::String = sub {
+            Params::Types::String(@_) and $_[0] =~ /Super/;
+        };
+    }
+
+    __( test => 'Super A' );
+    lives_ok( sub { Params::__check_parameter( 'test', 'Super::String[10]', '', 0 ) }, 'is Super' );
+    __( test => 'Super A' . 'x' x 10 );
+    dies_ok( sub { Params::__check_parameter( 'test', 'Super::String[10]', '', 0 ) }, 'is Super but to long' );
+    __( test => 'Duper A' );
+    dies_ok( sub { Params::__check_parameter( 'test', 'Super::String[10]', '', 0 ) }, 'No Super (wrong value)' );
+
     # cleaning
     %Params::Internal::typedefs       = ();
     %Params::Internal::current_params = ();

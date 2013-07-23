@@ -35,8 +35,6 @@ sub test_function {
     my $p_expected        = $p_{'expected'};
     ok( &$p_function( $p_value, @$p_function_params ) eq $p_expected, "'$p_value' " . ( $p_expected ? 'is a' : 'is NOT a' ) . " $p_function_name" );
 
-    #    diag($p_function_name);
-
 }
 
 use_ok('Params::Types');

@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 #* Name: Params
 #* Info: Simple Global Params Management System
-#* Author: Pawel Guspiel (neo77), <merlin@panth-net.com>
+#* Author: Pawel Guspiel (neo77) <neo@cpan.org>
 #*
 #* First. If you can use any function as in natural languague - you will use and understand even after few months
 #* Second. Your lazy life will be easy, and you will reduce a lot of errors if you will have guarancy that your parameter

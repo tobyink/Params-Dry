@@ -2,7 +2,7 @@
 #*
 #* Name: Params::Types
 #* Info: Types definitions module
-#* Author: Pawel Guspiel <merlin@panth-net.com>
+#* Author: Pawel Guspiel (neo77) <neo@cpan.org>
 #*
 #* This module keeps validation functions. You can of course add your modules which inherites from this and will add additional checks
 #*

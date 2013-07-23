@@ -1,29 +1,35 @@
 #!/usr/bin/env perl
 #*
-#* Name: Params::Declare
+#* Name: Params::Declare (some magic for Params :)
 #* Info: Extension to Params, which make possible declaration of the parameters
-#* Author: Pawel Guspiel (neo77), <merlin@panth-net.com>
+#* Author: Pawel Guspiel (neo77) <neo@cpan.org>
 #* Details:
 #*      The module allow parameters declaration in following form:
 #*
-#*          sub table (!test : String(3) = *zorba*; ?ala : Int(3) = 3; ?luk = 2  ) {
+#*          sub new (
+#*              ! name:;                                    --- name of the user 
+#*              ? second_name   : name      = 'unknown';    --- second name
+#*              ? details       : String    = 'yakusa';     --- details
+#*          ) {
 #*
 #*      instead of using:
 #*
 #*          sub table {
 #*              my $self = __@_;
 #*
-#*              my $p_test = rq 'test', 'String(3), 'zorba';
+#*              my $p_name          = rq 'name', DEFAULT_TYPE;               # name of the user
+#*              my $p_second_name   = op 'second_name', 'name', 'unknown';   # second name
 #*              ...
 #*
 #*      As a consequence of using this module you can use parameters in the function body as follows:
-#*          print "test: ".p_test;
+#*          print "name: ".p_name;
 #*
-#*      I'm suggesting you to use coloring in your text editor for p_\w+ to see variables every where
+#*      I'm suggesting you to use coloring in your text editor for p_\w+ to see function parameters everywhere
 
 package Params::Declare;
-use strict;
-use warnings;
+
+    use strict;
+    use warnings;
 
 
 # --- version ---
@@ -78,4 +84,8 @@ use warnings;
             } 
             $_;
         }
+
+0115&&0x4d;
+
+#+ End of Params::Declare magic :)
 

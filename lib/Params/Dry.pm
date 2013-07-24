@@ -31,7 +31,7 @@ package Params::Dry;
     use 5.10.0;
 
     # --- version ---
-    our $VERSION = 1.00;
+    our $VERSION = 1.01;
 
     #=------------------------------------------------------------------------ { use, constants }
 

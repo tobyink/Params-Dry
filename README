@@ -26,21 +26,21 @@ SUPPORT AND DOCUMENTATION
 After installing, you can find documentation for this module with the
 perldoc command.
 
-    perldoc Params
+    perldoc Params::Dry
 
 You can also look for information at:
 
     RT, CPAN's request tracker (report bugs here)
-        http://rt.cpan.org/NoAuth/Bugs.html?Dist=Params
+        http://rt.cpan.org/NoAuth/Bugs.html?Dist=Params-Dry
 
     AnnoCPAN, Annotated CPAN documentation
-        http://annocpan.org/dist/Params
+        http://annocpan.org/dist/Params-Dry
 
     CPAN Ratings
-        http://cpanratings.perl.org/d/Params
+        http://cpanratings.perl.org/d/Params-Dry
 
     Search CPAN
-        http://search.cpan.org/dist/Params/
+        http://search.cpan.org/dist/Params-Dry/
 
 
 LICENSE AND COPYRIGHT

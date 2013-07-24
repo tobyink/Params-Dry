@@ -50,8 +50,8 @@ TODO: {
     "placeholder date/time"       => qr(Date/time)
   );
 
-  module_boilerplate_ok('lib/Params.pm');
-  module_boilerplate_ok('lib/Params/Types.pm');
+  module_boilerplate_ok('lib/Params/Dry.pm');
+  module_boilerplate_ok('lib/Params/Dry/Types.pm');
 
 
 }

@@ -17,7 +17,7 @@ our $VERSION = 1.0;
 use FindBin qw/$Bin/;
 use lib $Bin."/../lib";
 
-use Params qw(:short);
+use Params::Dry qw(:short);
 
 #=------------------------------------------------------------------------( typedef definitions )
 
@@ -69,5 +69,5 @@ $pawel->print_message( text => 'Some message for you has arrived');
 print "Text is missed, and now uncomment no_more in get_name function to mark that all parameters was taken and get data from stack\n";
 
 typedef 'myname', 'name';
-print Params::__get_effective_type('myname');
+print Params::Dry::__get_effective_type('myname');
 

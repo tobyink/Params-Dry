@@ -7,8 +7,8 @@ use Test::More;
 plan tests => 2;
 
 BEGIN {
-    use_ok( 'Params' ) || print "Bail out!\n";
-    use_ok( 'Params::Types' ) || print "Bail out!\n";
+    use_ok( 'Params::Dry' ) || print "Bail out!\n";
+    use_ok( 'Params::Dry::Types' ) || print "Bail out!\n";
 }
 
-diag( "Testing Params $Params::VERSION, Perl $], $^X" );
+diag( "Testing Params::Dry $Params::Dry::VERSION, Perl $], $^X" );

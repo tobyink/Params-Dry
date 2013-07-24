@@ -4,10 +4,10 @@ use warnings FATAL => 'all';
 use ExtUtils::MakeMaker;
 
 WriteMakefile(
-    NAME             => 'Params',
+    NAME             => 'Params::Dry',
     AUTHOR           => q{Pawel Guspiel <neo@cpan.org>},
-    VERSION_FROM     => 'lib/Params.pm',
-    ABSTRACT_FROM    => 'lib/Params.pm',
+    VERSION_FROM     => 'lib/Params/Dry.pm',
+    ABSTRACT_FROM    => 'lib/Params/Dry.pm',
         LICENSE          => 'Artistic_2_0',
     PL_FILES         => {},
     MIN_PERL_VERSION => 5.010,

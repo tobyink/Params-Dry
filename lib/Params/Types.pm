@@ -38,7 +38,7 @@ package Params::Types;
     #=---------
     #  String
     #=---------
-    #* string type check
+    #* string type check (parameter sets max length)
     #* RETURN: PASS if test pass otherwise FAIL
     sub String {
         ref($_[0]) and return FAIL;
@@ -49,7 +49,7 @@ package Params::Types;
     #=------
     #  Int
     #=------
-    #* int type check Int(3) - no more than 999
+    #* int type check Int[3] - no more than 999
     #* RETURN: PASS if test pass otherwise FAIL
     sub Int {
         (ref($_[0]) or $_[0] !~ /^[+\-]?(\d+)$/) and return FAIL;

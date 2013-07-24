@@ -414,6 +414,61 @@ Also the strict parameter checking implementation is planed in next releases
 
 Common ones mean: '__', 'typedef', 'no_more', DEFAULT_TYPE
 
+=head1 BUILD IN TYPES
+
+=over 2
+
+=item B<String> - can be used with parameters (like: String[20]) which mean max 20 chars string
+
+=item B<Int> - can be used with parameters (like: Int[3]) which mean max 3 chars int not counting signs
+
+=item B<Float> - number with decimal part
+
+=item B<Bool> - boolean value (can be 0 or 1)
+
+=item B<Object> - check if is an object. Optional parameter extend check of exact object checking ex. Object[DBI::db]
+
+=item B<Ref> - any reference, Optional parameter defines type of the reference
+
+=item B<Scalar> - short cut of Ref[Scalar] 
+
+=item B<Array> - short cut of Ref[Array] 
+
+=item B<Hash> - short cut of Ref[Hash] 
+
+=item B<Code> - short cut of Ref[Code] 
+
+=back
+
+=head1 EXTENDING INTERNAL TYPES
+
+You can always write your module to check parameters. Please use always subnamespace of Params::Types
+
+You will to your check function C<param value> and list of the type parameters
+
+Example.
+
+    package Params::Types::Super;
+
+    use base Params::Types qw(const);
+
+    sub String {
+        SUPER::String(@_) and $_[0] =~ /Super/ and return PASS;
+        return FAIL;
+    }
+
+    ...
+
+    package main;
+
+    sub test {
+        my $self = __@_;
+
+        my $p_super_name = rq 'super_name', 'Super::String'; # that's all folks!
+        
+        ...
+    }
+
 =head1 ADDITIONAL INFORMATION
 
 B<1. I didn't wrote here any special extensions (callbacks, ordered parameter list, evals etc). Params module has to be fast.>
@@ -423,6 +478,12 @@ If there will be any extension in future. It will be in separate module.
 B<2. Ordered parameters list or named parameter list? Named parameter list. For sure.>
 
 Majority of the time you are spending on READING code, not writing it. So for sure named parameter list is better.
+
+
+=over 2
+
+=item B<__> - turtle operator
+Start getting the parameters. Used on the begin of the function
 
 =head1 AUTHOR
 

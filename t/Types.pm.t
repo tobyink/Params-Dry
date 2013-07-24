@@ -15,7 +15,7 @@ binmode STDERR, ':utf8';
 use Test::Most;    # last test to print
 
 use FindBin '$Bin';
-use lib $Bin. '/../../lib';
+use lib $Bin. '/../lib';
 
 use constant PASS => 1;    # pass test
 use constant FAIL => 0;    # test fail

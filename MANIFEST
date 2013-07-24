@@ -8,6 +8,6 @@ t/00-load.t
 t/manifest.t
 t/pod-coverage.t
 t/pod.t
-t/Params/Dry.pm.t
-t/Params/Dry/Types.pm.t
+t/Dry.pm.t
+t/Types.pm.t
 examples/standard.pl

@@ -13,7 +13,7 @@ package Params::Types;
     use warnings;
 
     # --- version ---
-    our $VERSION = 1.0_0;
+    our $VERSION = 1.00;
 
     #=------------------------------------------------------------------------ { use, constants }
 
@@ -151,6 +151,14 @@ Params::Types - build in types for Params - Simple Global Params Management Syst
 
 version 1.00
 
+=head1 EXPORT
+
+=over 2
+
+=item B<:const> imports PASS and FAIL constants
+
+=back
+
 =head1 BUILD IN TYPES
 
 =over 2
@@ -222,6 +230,7 @@ automatically be notified of progress on your bug as I make changes.
 
 You can find documentation for this module with the perldoc command.
 
+    perldoc Params::Types
     perldoc Params
 
 

@@ -44,7 +44,7 @@ package Params;
     use constant OK           => TRUE;     # true
     use constant NO           => FALSE;    # false
 
-    our $Debug = FALSE;                    # use Debug mode or not
+    our $Debug      = FALSE;               # use Debug mode or not
 
     #=------------------------------------------------------------------------ { export }
 
@@ -136,7 +136,6 @@ package Params;
         $param_value;
     }
 
-
     #=------------------------------------------------------------------------ { module public functions }
 
     #=-----
@@ -170,8 +169,8 @@ package Params;
         my ( $p_name, $p_definition ) = @_;
 
         if ( exists $Params::Internal::typedefs{$p_name} ) {
-            _error("Error parameter $p_name already defined as $p_definition") if
-                __get_effective_type($Params::Internal::typedefs{$p_name}) ne __get_effective_type($p_definition);
+            _error("Error parameter $p_name already defined as $p_definition")
+              if __get_effective_type( $Params::Internal::typedefs{$p_name} ) ne __get_effective_type($p_definition);
         }
 
         # --- just add new definition
@@ -194,7 +193,6 @@ package Params;
         return $self;
     }
 
-    # MARK strict mode
     #=----------
     #  no_more
     #=----------
@@ -202,12 +200,13 @@ package Params;
     #* required in case param call during param checking
     # RETURN: current params
     sub no_more() {
+
         pop @Params::Internal::params_stack;
         $Params::Internal::current_params = $Params::Internal::params_stack[-1];
     }
 
-# --- add additional names for funtions (long)
-    
+    # --- add additional names for funtions (long)
+
     *param_rq = *rq;
     *param_op = *op;
 
@@ -313,6 +312,18 @@ So all your dreams you can now find in this module.
 
 B<That's all. Easy to use. Easy to manage. Easy to understand.>
 
+=head1 EXPORT
+
+=over 2
+
+=item B<:short> imports: 'op', 'rq' and common ones
+
+=item B<:long> imports: 'param_op', 'param_rq' and common ones
+
+=back
+
+Common ones mean: '__', 'typedef', 'no_more', DEFAULT_TYPE
+
 
 =head1 CONSTANTS AND VARIABLES
 
@@ -332,11 +343,10 @@ B<That's all. Easy to use. Easy to manage. Easy to understand.>
 
 =back 
 
-=head1 PUBLIC METHODS
+=head1 SUBROUTINES/METHODS
 
-=over 2
 
-=item B<__> - turtle operator
+=head2 B<__> - turtle operator
 Start getting the parameters. Used on the begin of the function
     sub pleple {
         my $self = __@_;    
@@ -344,7 +354,7 @@ Start getting the parameters. Used on the begin of the function
 RETURN: first param if was called like $obj->pleple(%params) or undef on pleple(%params) call 
 
 
-=item B<rq> or B<param_rq> - required parameter
+=head2 B<rq> or B<param_rq> - required parameter
 Check if required parameter exists, if yes check if its valid, if not, report error
     
 B<rq> C<in param name> [C<in param type>, [C<default value>]]
@@ -362,7 +372,7 @@ B<rq> C<in param name> [C<in param type>, [C<default value>]]
 
 RETURN: parameter value
 
-=item B<op> or B<param_op> - optional parameter
+=head2 B<op> or B<param_op> - optional parameter
 Check if required parameter exists, if yes check it, if not return undef
     
 B<op> C<in param name> [C<in param type>, [C<default value>]]
@@ -373,7 +383,7 @@ C<see above>
 
 RETURN: parameter value
 
-=item B<no_more> - marks that no more parameters will be readed
+=head2 B<no_more> - marks that no more parameters will be readed
 It can be useful in some cases, for example whan default value of the param is the 
 function call and this function is using parameters as well. 
 
@@ -400,19 +410,6 @@ It is good practice to use no_more at the end of geting parameters
 Also the strict parameter checking implementation is planed in next releases
 (so using no_more you will be able to die if apear more parameters that was fetched - to avoid misspelings)
 
-=back
-
-=head1 MODULE PARAMETERS
-
-=over 2
-
-=item B<:short> imports: 'op', 'rq' and common ones
-
-=item B<:long> imports: 'param_op', 'param_rq' and common ones
-
-=back
-
-Common ones mean: '__', 'typedef', 'no_more', DEFAULT_TYPE
 
 =head1 BUILD IN TYPES
 
@@ -450,10 +447,10 @@ Example.
 
     package Params::Types::Super;
 
-    use base Params::Types qw(const);
+    use Params::Types qw(:const);
 
     sub String {
-        SUPER::String(@_) and $_[0] =~ /Super/ and return PASS;
+        Params::Types::String(@_) and $_[0] =~ /Super/ and return PASS;
         return FAIL;
     }
 
@@ -479,18 +476,88 @@ B<2. Ordered parameters list or named parameter list? Named parameter list. For 
 
 Majority of the time you are spending on READING code, not writing it. So for sure named parameter list is better.
 
-
-=over 2
-
-=item B<__> - turtle operator
-Start getting the parameters. Used on the begin of the function
-
 =head1 AUTHOR
 
-Pawel Guspiel (neo77) <neo@cpan.org>
+Pawel Guspiel (neo77), C<< <neo at cpan.org> >>
 
-=head1 LICENSE
+=head1 BUGS
 
-This program is free software; you can redistribute it and/or modify it under the same terms as Perl itself.
+Please report any bugs or feature requests to C<bug-params at rt.cpan.org>, or through
+the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Params>.  I will be notified, and then you'll
+automatically be notified of progress on your bug as I make changes.
+
+
+=head1 SUPPORT
+
+You can find documentation for this module with the perldoc command.
+
+    perldoc Params
+
+
+You can also look for information at:
+
+=over 4
+
+=item * RT: CPAN's request tracker (report bugs here)
+
+L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Params>
+
+=item * AnnoCPAN: Annotated CPAN documentation
+
+L<http://annocpan.org/dist/Params>
+
+=item * CPAN Ratings
+
+L<http://cpanratings.perl.org/d/Params>
+
+=item * Search CPAN
+
+L<http://search.cpan.org/dist/Params/>
+
+=back
+
+
+=head1 ACKNOWLEDGEMENTS
+
+
+=head1 LICENSE AND COPYRIGHT
+
+Copyright 2013 Pawel Guspiel (neo77).
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of the the Artistic License (2.0). You may obtain a
+copy of the full license at:
+
+L<http://www.perlfoundation.org/artistic_license_2_0>
+
+Any use, modification, and distribution of the Standard or Modified
+Versions is governed by this Artistic License. By using, modifying or
+distributing the Package, you accept this license. Do not use, modify,
+or distribute the Package, if you do not accept this license.
+
+If your Modified Version has been derived from a Modified Version made
+by someone other than you, you are nevertheless required to ensure that
+your Modified Version complies with the requirements of this license.
+
+This license does not grant you the right to use any trademark, service
+mark, tradename, or logo of the Copyright Holder.
+
+This license includes the non-exclusive, worldwide, free-of-charge
+patent license to make, have made, use, offer to sell, sell, import and
+otherwise transfer the Package with respect to any patent claims
+licensable by the Copyright Holder that are necessarily infringed by the
+Package. If you institute patent litigation (including a cross-claim or
+counterclaim) against any party alleging that the Package constitutes
+direct or contributory patent infringement, then this Artistic License
+to you shall terminate on the date that such litigation is filed.
+
+Disclaimer of Warranty: THE PACKAGE IS PROVIDED BY THE COPYRIGHT HOLDER
+AND CONTRIBUTORS "AS IS' AND WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
+THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+PURPOSE, OR NON-INFRINGEMENT ARE DISCLAIMED TO THE EXTENT PERMITTED BY
+YOUR LOCAL LAW. UNLESS REQUIRED BY LAW, NO COPYRIGHT HOLDER OR
+CONTRIBUTOR WILL BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, OR
+CONSEQUENTIAL DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THE PACKAGE,
+EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 

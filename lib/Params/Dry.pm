@@ -31,7 +31,7 @@ package Params::Dry;
     use 5.10.0;
 
     # --- version ---
-    our $VERSION = 1.04;
+    our $VERSION = 1.05;
 
     #=------------------------------------------------------------------------ { use, constants }
 
@@ -220,27 +220,27 @@ package Params::Dry;
 __END__
 =head1 NAME
 
-Params::Dry - Simple Global Params Management System
+Params::Dry - Simple Global Params Management System which helps you to keep DRY rule
 
 =head1 VERSION
 
-version 1.00
+version 1.05
 
 =head1 SYNOPSIS
 
 =head2 Fast start!
 
-=over 2
+=over 4
 
-=item B<typedef> - defines global types for variables
+=item * B<typedef> - defines global types for variables
 
-=item B<__@_> - starts parameter fetching
+=item * B<__@_> - starts parameter fetching
 
-=item B<rq/param_rq> - get required parameter
+=item * B<rq/param_rq> - get required parameter
 
-=item B<op/param_op> - get optional parameter
+=item * B<op/param_op> - get optional parameter
 
-=item B<no_more> - marks that all parametrs has been fetched (required only in some cases)
+=item * B<no_more> - marks that all parametrs has been fetched (required only in some cases)
 
 =back 
 
@@ -314,11 +314,11 @@ B<That's all. Easy to use. Easy to manage. Easy to understand.>
 
 =head1 EXPORT
 
-=over 2
+=over 4
 
-=item B<:short> imports: 'op', 'rq' and common ones
+=item * B<:short> - imports: 'op', 'rq' and common ones
 
-=item B<:long> imports: 'param_op', 'param_rq' and common ones
+=item * B<:long> - imports: 'param_op', 'param_rq' and common ones
 
 =back
 
@@ -327,19 +327,19 @@ Common ones mean: '__', 'typedef', 'no_more', DEFAULT_TYPE
 
 =head1 CONSTANTS AND VARIABLES
 
-=over 2
+=over 4
 
-=item B<TRUE> - set to 1
+=item * B<TRUE> - set to 1
 
-=item B<FALSE> - set to 0
+=item * B<FALSE> - set to 0
 
-=item B<OK> - set to TRUE (1)
+=item * B<OK> - set to TRUE (1)
 
-=item B<NO> - set to FALSE (0)
+=item * B<NO> - set to FALSE (0)
 
-=item B<DEFAULT_TYPE> - to mark that you want to use default type
+=item * B<DEFAULT_TYPE> - to mark that you want to use default type
 
-=item B<$Debug> - if set to TRUE (default: FALSE) will show more debug
+=item * B<$Debug> - if set to TRUE (default: FALSE) will show more debug
 
 =back 
 
@@ -347,7 +347,9 @@ Common ones mean: '__', 'typedef', 'no_more', DEFAULT_TYPE
 
 
 =head2 B<__> - turtle operator
+
 Start getting the parameters. Used on the begin of the function
+
     sub pleple {
         my $self = __@_;    
 
@@ -355,9 +357,11 @@ RETURN: first param if was called like $obj->pleple(%params) or undef on pleple(
 
 
 =head2 B<rq> or B<param_rq> - required parameter
+
 Check if required parameter exists, if yes check if its valid, if not, report error
     
 B<rq> C<in param name> [C<in param type>, [C<default value>]]
+
     sub pleple {
         my $self = __@_;
 
@@ -373,6 +377,7 @@ B<rq> C<in param name> [C<in param type>, [C<default value>]]
 RETURN: parameter value
 
 =head2 B<op> or B<param_op> - optional parameter
+
 Check if required parameter exists, if yes check it, if not return undef
     
 B<op> C<in param name> [C<in param type>, [C<default value>]]
@@ -384,12 +389,14 @@ C<see above>
 RETURN: parameter value
 
 =head2 B<no_more> - marks that no more parameters will be readed
+
 It can be useful in some cases, for example whan default value of the param is the 
 function call and this function is using parameters as well. 
 
 The function is getting from internal stack previous parameters
 
 Example.
+
     sub get_val {
         my $self = __@_;
         
@@ -413,31 +420,31 @@ Also the strict parameter checking implementation is planed in next releases
 
 =head1 BUILD IN TYPES
 
-=over 2
+=over 4
 
-=item B<String> - can be used with parameters (like: String[20]) which mean max 20 chars string
+=item * B<String> - can be used with parameters (like: String[20]) which mean max 20 chars string
 
-=item B<Int> - can be used with parameters (like: Int[3]) which mean max 3 chars int not counting signs
+=item * B<Int> - can be used with parameters (like: Int[3]) which mean max 3 chars int not counting signs
 
-=item B<Float> - number with decimal part
+=item * B<Float> - number with decimal part
 
-=item B<Bool> - boolean value (can be 0 or 1)
+=item * B<Bool> - boolean value (can be 0 or 1)
 
-=item B<Object> - check if is an object. Optional parameter extend check of exact object checking ex. Object[DBI::db]
+=item * B<Object> - check if is an object. Optional parameter extend check of exact object checking ex. Object[DBI::db]
 
-=item B<Ref> - any reference, Optional parameter defines type of the reference
+=item * B<Ref> - any reference, Optional parameter defines type of the reference
 
-=item B<Scalar> - short cut of Ref[Scalar] 
+=item * B<Scalar> - short cut of Ref[Scalar] 
 
-=item B<Array> - short cut of Ref[Array] 
+=item * B<Array> - short cut of Ref[Array] 
 
-=item B<Hash> - short cut of Ref[Hash] 
+=item * B<Hash> - short cut of Ref[Hash] 
 
-=item B<Code> - short cut of Ref[Code] 
+=item * B<Code> - short cut of Ref[Code] 
 
 =back
 
-=head1 EXTENDING INTERNAL TYPES
+=head2 Extending internal types
 
 You can always write your module to check parameters. Please use always subnamespace of Params::Dry::Types
 
@@ -451,7 +458,7 @@ Example.
 
     sub String {
         Params::Dry::Types::String(@_) and $_[0] =~ /Super/ and return PASS;
-        return FAIL;
+         return FAIL;
     }
 
     ...
@@ -492,6 +499,7 @@ automatically be notified of progress on your bug as I make changes.
 You can find documentation for this module with the perldoc command.
 
     perldoc Params::Dry
+    perldoc Params::Dry::Types
 
 
 You can also look for information at:

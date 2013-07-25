@@ -145,7 +145,7 @@ package Params::Dry::Types;
 __END__
 =head1 NAME
 
-Params::Dry::Types - build in types for Params::Dry - Simple Global Params::Dry Management System 
+Params::Dry::Types - Build-in types for Params::Dry - Simple Global Params Management System which helps you to keep always DRY rule
 
 =head1 VERSION
 
@@ -153,35 +153,35 @@ version 1.00
 
 =head1 EXPORT
 
-=over 2
+=over 4
 
-=item B<:const> imports PASS and FAIL constants
+=item * B<:const> imports PASS and FAIL constants
 
 =back
 
 =head1 BUILD IN TYPES
 
-=over 2
+=over 4
 
-=item B<String> - can be used with parameters (like: String[20]) which mean max 20 chars string
+=item * B<String> - can be used with parameters (like: String[20]) which mean max 20 chars string
 
-=item B<Int> - can be used with parameters (like: Int[3]) which mean max 3 chars int not counting signs
+=item * B<Int> - can be used with parameters (like: Int[3]) which mean max 3 chars int not counting signs
 
-=item B<Float> - number with decimal part
+=item * B<Float> - number with decimal part
 
-=item B<Bool> - boolean value (can be 0 or 1)
+=item * B<Bool> - boolean value (can be 0 or 1)
 
-=item B<Object> - check if is an object. Optional parameter extend check of exact object checking ex. Object[DBI::db]
+=item * B<Object> - check if is an object. Optional parameter extend check of exact object checking ex. Object[DBI::db]
 
-=item B<Ref> - any reference, Optional parameter defines type of the reference
+=item * B<Ref> - any reference, Optional parameter defines type of the reference
 
-=item B<Scalar> - short cut of Ref[Scalar] 
+=item * B<Scalar> - short cut of Ref[Scalar] 
 
-=item B<Array> - short cut of Ref[Array] 
+=item * B<Array> - short cut of Ref[Array] 
 
-=item B<Hash> - short cut of Ref[Hash] 
+=item * B<Hash> - short cut of Ref[Hash] 
 
-=item B<Code> - short cut of Ref[Code] 
+=item * B<Code> - short cut of Ref[Code] 
 
 =back
 
@@ -255,10 +255,6 @@ L<http://cpanratings.perl.org/d/Params-Dry>
 L<http://search.cpan.org/dist/Params-Dry/>
 
 =back
-
-
-=head1 ACKNOWLEDGEMENTS
-
 
 =head1 LICENSE AND COPYRIGHT
 

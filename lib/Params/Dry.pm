@@ -1,4 +1,3 @@
-#!/usr/bin/perl
 #* Name: Params::Dry
 #* Info: Simple Global Params Management System
 #* Author: Pawel Guspiel (neo77) <neo@cpan.org>
@@ -35,8 +34,8 @@ package Params::Dry;
 
     #=------------------------------------------------------------------------ { use, constants }
 
-    use Carp;             # confess
-    use Params::Dry::Types;    # to mark that will reserving this namespace (build in types)
+    use Carp;                   # confess
+    use Params::Dry::Types;     # to mark that will reserving this namespace (build in types)
 
     use constant DEFAULT_TYPE => 1;        # default check (for param_op)
     use constant TRUE         => 1;        # true

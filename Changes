@@ -1,5 +1,19 @@
 Revision history for Params::Dry
 
-0.01    Date/time
-        First version, released on an unsuspecting world.
+1.06 2013-07-31    
+ - fix comments
+ - fixing Changes RT#87453
+1.05 2013-07-25    
+ - updating pod documentation
+1.04 2013-07-24 
+ - initial changes (manifest)
+1.03 2013-07-24    
+ - fighting with dir structure
+1.02 2013-07-24    
+ - updating readm
+1.01 2013-07-24    
+ - moving tests to right place, updating renaming
+1.00 2013-07-24    
+ - First version, released on an unsuspecting world.
+
 

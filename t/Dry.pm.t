@@ -56,22 +56,6 @@ $tb->output( \*STDOUT );
     dies_ok( sub { _error('any') }, '_error function dies' );
 }
 
-#=-----------------------
-#  __get_effective_type
-#=-----------------------
-{
-    typedef( 'client',     'String[20]' );
-    typedef( 'client_bis', 'client' );
-    typedef( 'client_ss',  'client_bis' );
-
-    ok( Params::Dry::__get_effective_type('client') eq 'String[20]',     'check effective type of main type' );
-    ok( Params::Dry::__get_effective_type('client_bis') eq 'String[20]', 'check effective type of child type' );
-    ok( Params::Dry::__get_effective_type('client_ss') eq 'String[20]',  'check effective type of grand child type' );
-
-    # cleaning
-    %Params::Dry::Internal::typedefs = ();
-}
-
 #=--------------------
 #  __check_parameter
 #=--------------------
@@ -109,21 +93,23 @@ $tb->output( \*STDOUT );
 
     # --- define own type
     {
-        no warnings 'once';
-        *Params::Dry::Types::Super::String = sub {
-            Params::Dry::Types::String(@_) and $_[0] =~ /Super/;
-        };
+        package MyTypes::Super;
+        use Type::Library -base;
+        use Type::Utils;
+        declare "String",
+            as Params::Dry::Types::String(),
+            where { /Super/ },
+            constraint_generator => Params::Dry::Types::String()->constraint_generator;
     }
 
     __( test => 'Super A' );
-    lives_ok( sub { Params::Dry::__check_parameter( 'test', 'Super::String[10]', '', 0 ) }, 'is Super' );
+    lives_ok( sub { Params::Dry::__check_parameter( 'test', 'MyTypes::Super::String[10]', '', 0 ) }, 'is Super' );
     __( test => 'Super A' . 'x' x 10 );
-    dies_ok( sub { Params::Dry::__check_parameter( 'test', 'Super::String[10]', '', 0 ) }, 'is Super but to long' );
+    dies_ok( sub { Params::Dry::__check_parameter( 'test', 'MyTypes::Super::String[10]', '', 0 ) }, 'is Super but to long' );
     __( test => 'Duper A' );
-    dies_ok( sub { Params::Dry::__check_parameter( 'test', 'Super::String[10]', '', 0 ) }, 'No Super (wrong value)' );
+    dies_ok( sub { Params::Dry::__check_parameter( 'test', 'MyTypes::Super::String[10]', '', 0 ) }, 'No Super (wrong value)' );
 
     # cleaning
-    %Params::Dry::Internal::typedefs       = ();
     %Params::Dry::Internal::current_params = ();
     @Params::Dry::Internal::params_stack   = ();
 }
@@ -144,9 +130,9 @@ $tb->output( \*STDOUT );
     }
 
     op( 'test', 'client', 'default_value' );
-    is_deeply( \@params, [ 'test', 'client', 'default_value', 0 ], 'op call parameters' );
+    is_deeply( \@params, [ 'test', 'client', 'default_value', 0, __PACKAGE__ ], 'op call parameters' );
     rq( 'test2', 'client_bis', 'default2_value' );
-    is_deeply( \@params, [ 'test2', 'client_bis', 'default2_value', 1 ], 'rq call parameters' );
+    is_deeply( \@params, [ 'test2', 'client_bis', 'default2_value', 1, __PACKAGE__ ], 'rq call parameters' );
 
     *Params::Dry::__check_parameter = *__check_parameter_old
 }
@@ -157,9 +143,7 @@ $tb->output( \*STDOUT );
 {
     my $name = typedef( 'client', 'String[20]' );
     ok( $name eq 'client', 'returned type name by typedef' );
-    is_deeply( \%Params::Dry::Internal::typedefs, { client => 'String[20]' }, 'adding client type' );
     typedef( 'client_bis', 'client' );
-    is_deeply( \%Params::Dry::Internal::typedefs, { client => 'String[20]', client_bis => 'client' }, 'adding client_bis type' );
     dies_ok( sub { typedef( 'client', 'String[10]' ) }, 'unsuccessful try to redefine client type' );
     lives_ok( sub { typedef( 'client', 'String[20]' ) }, 'successful try to redefine client type with the same type value' );
 

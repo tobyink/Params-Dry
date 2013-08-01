@@ -22,10 +22,11 @@ package Params::Dry::Types;
     use constant PASS     =>    1; # pass test
     use constant FAIL     =>    0; # test fail
 
-    #=------------------------------------------------------------------------ { export }
+    use Type::Library -base;
+    use Type::Utils;
+    use Types::Standard;
 
-    use Exporter;	# to export _ rq and opt
-    our @ISA = qw(Exporter);
+    #=------------------------------------------------------------------------ { export }
 
     our @EXPORT_OK = qw(PASS FAIL);
 
@@ -39,105 +40,105 @@ package Params::Dry::Types;
     #  String
     #=---------
     #* string type check (parameter sets max length)
-    #* RETURN: PASS if test pass otherwise FAIL
-    sub String {
-        ref($_[0]) and return FAIL;
-        $_[1] and length $_[0] > $_[1] and return FAIL;
-        PASS;
-    }
+    declare "String",
+        as Types::Standard::Str,
+        constraint_generator => sub {
+            my $max_length = Types::Standard::Int->($_[0]);
+            return sub { length($_) <= $max_length };
+        },
+        inline_generator => sub {
+            my $max_length = Types::Standard::Int->($_[0]);
+            return sub { return(undef, "length($_) <= $max_length") };
+        };
 
     #=------
     #  Int
     #=------
     #* int type check Int[3] - no more than 999
-    #* RETURN: PASS if test pass otherwise FAIL
-    sub Int {
-        (ref($_[0]) or $_[0] !~ /^[+\-]?(\d+)$/) and return FAIL;
-        $_[1] and $1 and length $1 > $_[1] and return FAIL;
-        PASS;
-    }
+    declare "Int",
+        as Types::Standard::StrMatch[ qr/^[+\-]?(\d+)$/ ],
+        constraint_generator => sub {
+            my $max_length = Types::Standard::Int->($_[0]);
+            return sub { $_ =~ /^[+-]?(.+)$/; length($1) <= $max_length };
+        },
+        inline_generator => sub {
+            my $max_length = Types::Standard::Int->($_[0]);
+            return sub { return(undef, "do { $_ =~ /^[+-]?(.+)\$/; length(\$1) <= $max_length }") };
+        };
 
     #=--------
     #  Float
     #=--------
     #* float type check
-    #* RETURN: PASS if test pass otherwise FAIL
-    sub Float {
-        (ref($_[0]) or $_[0] !~ /^[+\-]?(\d+(?:\.\d+)?)$/) and return FAIL;
-        $_[1] and $1 and length $1 > $_[1] and return FAIL;
-        PASS;
-    }
+    declare "Float",
+        as Types::Standard::StrMatch[ qr/^[+\-]?(\d+(?:\.\d+)?)$/ ],
+        constraint_generator => sub {
+            my $max_length = Types::Standard::Int->($_[0]);
+            return sub { $_ =~ /^[+-]?(.+)$/; length($1) <= $max_length };
+        },
+        inline_generator => sub {
+            my $max_length = Types::Standard::Int->($_[0]);
+            return sub { return(undef, "do { $_ =~ /^[+-]?(.+)\$/; length(\$1) <= $max_length }") };
+        };
 
     #=-------
     #  Bool
     #=-------
     #* Bool type check
-    #* RETURN: PASS if test pass otherwise FAIL
-    sub Bool {
-        return PASS if !ref($_[0]) and ("$_[0]" eq '0' or "$_[0]" eq 1);
-        FAIL;
-    }
+    declare "Bool",
+        as Types::Standard::Bool;
 
     #=---------
     #  Object
     #=---------
     #* Object type check, Object - just object, or Object(APos::core) check if is APos::core type
-    #* RETURN: PASS if test pass otherwise FAIL
-    sub Object {
-        my $class = blessed($_[0]);
-        return FAIL if !$class; # not an object    
-        return FAIL if $_[1] and ($_[1] ne $class);
-        PASS;
-    }
+    declare "Object",
+        as Types::Standard::InstanceOf,
+        constraint_generator => Types::Standard::InstanceOf->constraint_generator,
+        inline_generator     => Types::Standard::InstanceOf->inline_generator;
 
     #=------
     #  Ref
     #=------
     #* ref type check
-    #* RETURN: PASS if test pass otherwise FAIL
-    sub Ref {
-        my $ref = ref($_[0]) or return FAIL;
-        
-        return FAIL if $_[1] and $ref ne $_[1];
-        PASS;
-    }
-
+    declare "Ref",
+        as Types::Standard::Ref,
+        constraint_generator => Types::Standard::Ref->constraint_generator,
+        inline_generator     => Types::Standard::Ref->inline_generator;
 
     #=---------
     #  Scalar
     #=---------
     #* scalar type check
-    #* RETURN: PASS if test pass otherwise FAIL
-    sub Scalar {
-        Ref($_[0],'SCALAR');
-    }
+    declare "Scalar",
+        as Types::Standard::ScalarRef,
+        constraint_generator => Types::Standard::ScalarRef->constraint_generator,
+        inline_generator     => Types::Standard::ScalarRef->inline_generator;
 
     #=--------
     #  Array
     #=--------
     #* array type check
-    #* RETURN: PASS if test pass otherwise FAIL
-    sub Array {
-        Ref($_[0],'ARRAY');
-    }
+    declare "Array",
+        as Types::Standard::ArrayRef,
+        constraint_generator => Types::Standard::ArrayRef->constraint_generator,
+        inline_generator     => Types::Standard::ArrayRef->inline_generator;
 
     #=-------
     #  Hash
     #=-------
     #* array type check
-    #* RETURN: PASS if test pass otherwise FAIL
-    sub Hash {
-        Ref($_[0],'HASH');
-    }
+    declare "Hash",
+        as Types::Standard::HashRef,
+        constraint_generator => Types::Standard::HashRef->constraint_generator,
+        inline_generator     => Types::Standard::HashRef->inline_generator;
 
     #=-------
     #  Code
     #=-------
     #* array type check
-    #* RETURN: PASS if test pass otherwise FAIL
-    sub Code {
-        Ref($_[0],'CODE');
-    }
+    declare "Code",
+        as Types::Standard::CodeRef;
 
 0115&&0x4d;
 

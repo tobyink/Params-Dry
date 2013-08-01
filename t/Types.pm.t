@@ -13,6 +13,7 @@ binmode STDOUT, ':utf8';
 binmode STDERR, ':utf8';
 
 use Test::Most;    # last test to print
+use Test::TypeTiny;
 
 use FindBin '$Bin';
 use lib $Bin. '/../lib';
@@ -33,8 +34,13 @@ sub test_function {
     my $p_function_params = $p_{'function_params'} || [];
     my $p_value           = $p_{'value'};
     my $p_expected        = $p_{'expected'};
-    ok( &$p_function( $p_value, @$p_function_params ) eq $p_expected, "'$p_value' " . ( $p_expected ? 'is a' : 'is NOT a' ) . " $p_function_name" );
 
+    my $type_constraint = $p_function->($p_function_params);
+
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+    $p_expected
+        ? should_pass($p_value, $type_constraint)
+        : should_fail($p_value, $type_constraint);
 }
 
 use_ok('Params::Dry::Types');

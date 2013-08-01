@@ -45,6 +45,16 @@ package Params::Dry;
 
     our $Debug      = FALSE;               # use Debug mode or not
 
+    use Type::Utils ();
+    use Type::Registry ();
+
+    our $REG = __initialize_registry();
+    sub __initialize_registry {
+        my $r = 'Type::Registry'->new;
+        $r->add_types('Params::Dry::Types');
+        return $r;
+    }
+
     #=------------------------------------------------------------------------ { export }
 
     # import strict params
@@ -71,66 +81,36 @@ package Params::Dry;
         ($Params::Dry::Debug) ? confess(@_) : die(@_);
     }
 
-    #=-----------------------
-    #  __get_effective_type
-    #=-----------------------
-    #* counts effective type of type (ex. for super_client base type is client and for client base type is String[20]
-    #* so for super_client final type will be String[20])
-    #* RETURN: final type string
-    sub __get_effective_type {
-        my $param_type = $Params::Dry::Internal::typedefs{"$_[0]"};
-        $param_type ? __get_effective_type($param_type) : $_[0];
-    }
-
     #=--------------------
     #  __check_parameter
     #=--------------------
     #* checks validity of the parameter
     #* RETURN: param value
     sub __check_parameter {
-        my ( $p_name, $p_type, $p_default, $p_is_required ) = @_;
+        my ( $p_name, $p_type, $p_default, $p_is_required) = @_;
 
         # --- check internal syntax ---
         _error("Name of the parameter has to be defined") unless $p_name;
 
-        # --- detect type (set explicite or get it from name?)
-        my $counted_param_type = ( !defined($p_type) or ( $p_type =~ /^\d+$/ and $p_type == DEFAULT_TYPE ) ) ? $p_name : $p_type;
-
-        # --- check effective parameter definition
-        my $effective_param_type = __get_effective_type($counted_param_type);
-
-        # --- check effective parameter definition for used name (if exists) and if user is not trying to replace name-type with new one (to keep clean naminigs)
-        if ( $Params::Dry::Internal::typedefs{"$p_name"} ) {
-            my $effective_name_type = __get_effective_type($p_name);
-            _error("This variable $p_name is used before in code as $p_name type ($effective_name_type) and here you are trying to redefine it to $counted_param_type ($effective_param_type)")
-              if $effective_name_type ne $effective_param_type;
-        }
-
-        # --- get package, function and parameters
-        my ( $type_package, $type_function, $parameters ) = $effective_param_type =~ /^(?:(.+)::)?([^\[]+)(?:\[(.+?)\])?/;
-
-        my $final_type_package = ($type_package) ? 'Params::Dry::Types::' . $type_package : 'Params::Dry::Types';
-
-        my @type_parameters = split /\s*,\s*/, $parameters // '';
-
-        # --- set default type unless type ---
-        _error("Type $counted_param_type ($effective_param_type) is not defined") unless $final_type_package->can("$type_function");
-
         # --- getting final parameter value ---
         my $param_value = ( $Params::Dry::Internal::current_params->{"$p_name"} ) // $p_default // undef;
-
-        my $check_function = $final_type_package . '::' . $type_function;
 
         # --- required / optional
         if ( !defined($param_value) ) {
             ($p_is_required) ? _error("Parameter '$p_name' is required)") : return;
         }
 
+        return $param_value if !ref($p_type) && $p_type eq DEFAULT_TYPE;
+
+        # --- get type
+        state %_cache;
+        my $type_function = ref($p_type)
+            ? $p_type->compiled_check
+            : ( $_cache{$p_type} //= $REG->lookup($p_type)->compiled_check );
+
         # --- check if is valid
-        {
-            no strict 'refs';
-            &$check_function( $param_value, @type_parameters ) or _error("Parameter '$p_name' is not '$counted_param_type' type (effective: $effective_param_type)");
-        }
+        $type_function->($param_value)
+            or _error("Parameter '$p_name' is not '$p_type' type");
 
         $param_value;
     }
@@ -145,7 +125,7 @@ package Params::Dry;
     sub rq($;$$) {
         my ( $p_name, $p_type, $p_default ) = @_;
 
-        return __check_parameter( $p_name, $p_type, $p_default, TRUE );
+        return __check_parameter( $p_name, $p_type, $p_default, TRUE, scalar caller );
     }
 
     #=-----
@@ -156,7 +136,7 @@ package Params::Dry;
     sub op($;$$) {
         my ( $p_name, $p_type, $p_default ) = @_;
 
-        return __check_parameter( $p_name, $p_type, $p_default, FALSE );
+        return __check_parameter( $p_name, $p_type, $p_default, FALSE, scalar caller );
     }
 
     #=---------
@@ -165,18 +145,14 @@ package Params::Dry;
     #* make relation between name and definition, which can be used to check param types
     #* RETURN: name of the type
     sub typedef($$) {
-        my ( $p_name, $p_definition ) = @_;
-
-        if ( exists $Params::Dry::Internal::typedefs{$p_name} ) {
-            _error("Error parameter $p_name already defined as $p_definition")
-              if __get_effective_type( $Params::Dry::Internal::typedefs{$p_name} ) ne __get_effective_type($p_definition);
+        my ($newname, $oldname) = @_;
+        my $type = $REG->lookup($oldname)
+            or _error("could not find type: $oldname");
+        if (exists $REG->{$newname} and not $REG->{$newname}==$type) {
+            _error("Error parameter $newname already defined")
         }
-
-        # --- just add new definition
-        $Params::Dry::Internal::typedefs{$p_name} = $p_definition;
-
-        return $p_name;
-
+        $REG->{$newname} = $type;
+        return $newname;
     }
 
     #=-----
@@ -400,22 +376,21 @@ Example.
         my $self = __@_;
         
         my $p_name = rq 'name';
-
+        
         no_more; # to give back old parameters
-
+        
     }
-
+    
     sub main {
         my $self = __@_;
         
         my $p_nick = rq 'nick', 'String', $self->get_val(name => 'somename');
-
+        
     }
 
 It is good practice to use no_more at the end of geting parameters
 Also the strict parameter checking implementation is planed in next releases
 (so using no_more you will be able to die if apear more parameters that was fetched - to avoid misspelings)
-
 
 =head1 BUILD IN TYPES
 
@@ -445,29 +420,28 @@ Also the strict parameter checking implementation is planed in next releases
 
 =head2 Extending internal types
 
-You can always write your module to check parameters. Please use always subnamespace of Params::Dry::Types
-
-You will to your check function C<param value> and list of the type parameters
+You can always write your module to check parameters.
 
 Example.
 
-    package Params::Dry::Types::Super;
-
-    use Params::Dry::Types qw(:const);
-
-    sub String {
-        Params::Dry::Types::String(@_) and $_[0] =~ /Super/ and return PASS;
-         return FAIL;
-    }
-
+    package MyTypes;
+    
+    use Type::Library -base;
+    use Type::Utils;
+    use Params::Dry::Types 'String';
+    
+    declare 'SuperString',
+        as String,
+        where { /Super/ };
+    
     ...
 
     package main;
-
+    
     sub test {
         my $self = __@_;
-
-        my $p_super_name = rq 'super_name', 'Super::String'; # that's all folks!
+        
+        my $p_super_name = rq 'super_name', 'MyTypes::SuperString'; # that's all folks!
         
         ...
     }
